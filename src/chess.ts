@@ -220,38 +220,75 @@ export class ChessGame {
 
   isCheckmate(player: Player): boolean {
     if (!this.isKingInCheck(player)) {
-      return false; 
+      return false;
     }
-   
-    const opponent = player.color === "White" ? "Black" : "White";
+  
     const board = this.grid.getBoard();
-
+    const kingPosition = this.findKingPosition(player);
+  
+ 
+    const kingMoves = [
+      { row: -1, col: -1 }, { row: -1, col: 0 }, { row: -1, col: 1 },
+      { row: 0, col: -1 },                  { row: 0, col: 1 },
+      { row: 1, col: -1 }, { row: 1, col: 0 }, { row: 1, col: 1 },
+    ];
+  
+    for (const move of kingMoves) {
+      const newRow = kingPosition.row + move.row;
+      const newCol = kingPosition.col + move.col;
+  
+      
+      if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+        const originalPiece = board[newRow][newCol];
+  
+        
+        board[newRow][newCol] = `${player.color} King`;
+        board[kingPosition.row][kingPosition.col] = null;
+  
+        
+        const isStillInCheck = this.isKingInCheck(player);
+  
+       
+        board[newRow][newCol] = originalPiece;
+        board[kingPosition.row][kingPosition.col] = `${player.color} King`;
+  
+        if (!isStillInCheck) {
+          return false; 
+        }
+      }
+    }
+  
+    
     for (let row = 0; row < 8; row++) {
       for (let col = 0; col < 8; col++) {
         const piece = board[row][col];
         if (piece && piece.startsWith(player.color)) {
-          
           for (let toRow = 0; toRow < 8; toRow++) {
             for (let toCol = 0; toCol < 8; toCol++) {
               if (this.isValidMove(piece, row, col, toRow, toCol)) {
-               
                 const originalPiece = board[toRow][toCol];
+  
+                
                 board[toRow][toCol] = piece;
                 board[row][col] = null;
-                if (!this.isKingInCheck(player)) {
-                  board[toRow][toCol] = originalPiece;
-                  board[row][col] = piece;
-                  return false; 
-                }
+  
+                
+                const isStillInCheck = this.isKingInCheck(player);
+  
                
                 board[toRow][toCol] = originalPiece;
                 board[row][col] = piece;
+  
+                if (!isStillInCheck) {
+                  return false; 
+                }
               }
             }
           }
         }
       }
     }
+  
     return true; 
   }
 
